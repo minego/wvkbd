@@ -388,8 +388,7 @@ kbd_press_key(struct kbd *kb, struct key *k, uint32_t time)
     case Code:
         if (k->code_mod) {
             if (k->reset_mod) {
-                zwp_virtual_keyboard_v1_modifiers(kb->vkbd, k->code_mod, 0, 0,
-                                                  0);
+                zwp_virtual_keyboard_v1_modifiers(kb->vkbd, k->code_mod, 0, 0, 0);
             } else {
                 zwp_virtual_keyboard_v1_modifiers(
                     kb->vkbd, kb->mods ^ k->code_mod, 0, 0, 0);
@@ -408,6 +407,11 @@ kbd_press_key(struct kbd *kb, struct key *k, uint32_t time)
             zwp_virtual_keyboard_v1_key(kb->vkbd, time, kb->last_press->code,
                                         WL_KEYBOARD_KEY_STATE_PRESSED);
         }
+
+		// MNG Clear any mod keys. They will be set again before any key press
+		// but don't leave them held, or they can interfere with how DWL
+		// handles the mouse and prevent interaction with the osk.
+		zwp_virtual_keyboard_v1_modifiers(kb->vkbd, 0, 0, 0, 0);
         if (kb->print || kb->print_intersect)
             kbd_print_key_stdout(kb, k);
         if (kb->compose) {
@@ -427,7 +431,10 @@ kbd_press_key(struct kbd *kb, struct key *k, uint32_t time)
                 kbd_draw_key(kb, k, Unpress);
             }
         }
-        zwp_virtual_keyboard_v1_modifiers(kb->vkbd, kb->mods, 0, 0, 0);
+
+		// MNG Do NOT send the event until a key with a code is pressed to
+		// avoid interactions with how DWL handles the mouse
+        // zwp_virtual_keyboard_v1_modifiers(kb->vkbd, kb->mods, 0, 0, 0);
         break;
     case Layout:
         // switch to the layout determined by the key
