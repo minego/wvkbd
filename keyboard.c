@@ -326,11 +326,6 @@ kbd_release_key(struct kbd *kb, uint32_t time)
         kb->last_swipe = NULL;
     }
 
-	// MNG Clear any mod keys. They will be set again before any key press
-	// but don't leave them held, or they can interfere with how DWL
-	// handles the mouse and prevent interaction with the osk.
-	zwp_virtual_keyboard_v1_modifiers(kb->vkbd, 0, 0, 0, 0);
-
     drwsurf_flip(kb->surf);
 
     kbd_clear_last_popup(kb);
